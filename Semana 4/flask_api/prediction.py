@@ -1,43 +1,26 @@
-#!/usr/bin/python
-
-import pandas as pd
 import joblib
-import sys
 import os
-
-def predict_proba(url):
-
-    clf = joblib.load(os.path.dirname(__file__) + '/phishing.pkl')
-
-    url_ = pd.DataFrame([url], columns=['url'])
-
-    # Create features
-    keywords = ['https', 'login', '.php', '.html', '@', 'sign']
-    for keyword in keywords:
-        url_['keyword_' + keyword] = url_.url.str.contains(keyword).astype(int)
-
-    url_['lenght'] = url_.url.str.len() - 2
-    domain = url_.url.str.split('/', expand=True).iloc[:, 2]
-    url_['lenght_domain'] = domain.str.len()
-    url_['isIP'] = (url_.url.str.replace('.', '') * 1).str.isnumeric().astype(int)
-    url_['count_com'] = url_.url.str.count('com')
-
-    # Make prediction
-    p1 = clf.predict_proba(url_.drop('url', axis=1))[0, 1]
-
-    return p1
+import pandas as pd
+import sys
 
 
-if __name__ == "__main__":
+# Usamos __file__ para que Python sepa automáticamente dónde está este archivo
+ruta_actual = os.path.dirname(os.path.abspath(__file__))
+if ruta_actual not in sys.path:
+    sys.path.append(ruta_actual)
 
-    if len(sys.argv) == 1:
-        print('Please add an URL')
+from custom_transformers import AgregadosPorGrupo
 
-    else:
-
-        url = sys.argv[1]
-
-        p1 = predict_proba(url)
-
-        print(url)
-        print('Probability of Phishing: ', p1)
+def predict(data_dict):
+    path = os.path.join(os.path.dirname(__file__), 'popularidad.pkl')
+    modeloxgb = joblib.load(path)
+    
+    df = pd.DataFrame([data_dict])
+    
+    # Asegúrate de que las columnas coincidan con las del entrenamiento
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            df[col] = df[col].astype('category')
+            
+    p1 = modeloxgb.predict(df)[0]
+    return float(p1)
