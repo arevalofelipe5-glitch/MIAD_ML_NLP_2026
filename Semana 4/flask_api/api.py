@@ -1,7 +1,6 @@
 #!/usr/bin/python
 from flask import Flask
 from flask_restx import Api, Resource, fields
-import joblib
 import os
 from prediction import predict 
 
@@ -51,14 +50,13 @@ class PopularidadApi(Resource):
     @api.doc(parser=parser)
     @api.marshal_with(resource_fields)
     def get(self):
-        # 1. Obtener los argumentos de la URL
+        # Obtener los argumentos de la solicitud
         args = parser.parse_args()
 
-        # 2. Llamar a la función predict pasando todo el diccionario
-        # Esta función debe estar en tu archivo prediction.py
+        # Llamar a la función predict pasando todo el diccionario
         score = predict(args)
 
-        # 3. Retornar el resultado numérico
+        # Retornar el resultado numérico
         return {
          "result": float(score)
         }, 200

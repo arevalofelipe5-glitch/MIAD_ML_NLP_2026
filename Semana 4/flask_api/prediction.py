@@ -17,7 +17,6 @@ def predict(data_dict):
     
     df = pd.DataFrame([data_dict])
     
-    # Asegúrate de que las columnas coincidan con las del entrenamiento
     for col in df.columns:
         if df[col].dtype == 'object':
             df[col] = df[col].astype('category')
